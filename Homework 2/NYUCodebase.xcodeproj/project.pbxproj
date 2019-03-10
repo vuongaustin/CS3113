@@ -20,11 +20,6 @@
 		6DEF23C11B96CC2600BCE792 /* fragment.glsl in Resources */ = {isa = PBXBuildFile; fileRef = 6DEF23BB1B96CC2600BCE792 /* fragment.glsl */; };
 		6DEF23C31B96CC2600BCE792 /* ShaderProgram.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 6DEF23BE1B96CC2600BCE792 /* ShaderProgram.cpp */; };
 		6DEF23C41B96CC2600BCE792 /* vertex.glsl in Resources */ = {isa = PBXBuildFile; fileRef = 6DEF23C01B96CC2600BCE792 /* vertex.glsl */; };
-		8BD98CC9222C86E10073D665 /* exodiarightarm.png in Resources */ = {isa = PBXBuildFile; fileRef = 8BD98CC4222C86E00073D665 /* exodiarightarm.png */; };
-		8BD98CCA222C86E10073D665 /* exodiahead.png in Resources */ = {isa = PBXBuildFile; fileRef = 8BD98CC5222C86E00073D665 /* exodiahead.png */; };
-		8BD98CCB222C86E10073D665 /* exodialeftarm.png in Resources */ = {isa = PBXBuildFile; fileRef = 8BD98CC6222C86E10073D665 /* exodialeftarm.png */; };
-		8BD98CCC222C86E10073D665 /* exodiarightleg.png in Resources */ = {isa = PBXBuildFile; fileRef = 8BD98CC7222C86E10073D665 /* exodiarightleg.png */; };
-		8BD98CCD222C86E10073D665 /* exodialeftleg.png in Resources */ = {isa = PBXBuildFile; fileRef = 8BD98CC8222C86E10073D665 /* exodialeftleg.png */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -47,11 +42,6 @@
 		6DEF23BE1B96CC2600BCE792 /* ShaderProgram.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ShaderProgram.cpp; sourceTree = "<group>"; };
 		6DEF23BF1B96CC2600BCE792 /* ShaderProgram.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ShaderProgram.h; sourceTree = "<group>"; };
 		6DEF23C01B96CC2600BCE792 /* vertex.glsl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = vertex.glsl; sourceTree = "<group>"; };
-		8BD98CC4222C86E00073D665 /* exodiarightarm.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = exodiarightarm.png; sourceTree = "<group>"; };
-		8BD98CC5222C86E00073D665 /* exodiahead.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = exodiahead.png; sourceTree = "<group>"; };
-		8BD98CC6222C86E10073D665 /* exodialeftarm.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = exodialeftarm.png; sourceTree = "<group>"; };
-		8BD98CC7222C86E10073D665 /* exodiarightleg.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = exodiarightleg.png; sourceTree = "<group>"; };
-		8BD98CC8222C86E10073D665 /* exodialeftleg.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = exodialeftleg.png; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -131,11 +121,6 @@
 		6D5A86E119AE5CAA0066C1FD /* Code */ = {
 			isa = PBXGroup;
 			children = (
-				8BD98CC5222C86E00073D665 /* exodiahead.png */,
-				8BD98CC6222C86E10073D665 /* exodialeftarm.png */,
-				8BD98CC8222C86E10073D665 /* exodialeftleg.png */,
-				8BD98CC4222C86E00073D665 /* exodiarightarm.png */,
-				8BD98CC7222C86E10073D665 /* exodiarightleg.png */,
 				6DEF23BB1B96CC2600BCE792 /* fragment.glsl */,
 				6DE9D2F01BA6AB8C002D599C /* fragment_textured.glsl */,
 				6DC707691BA7273500225B7D /* vertex_textured.glsl */,
@@ -204,12 +189,7 @@
 				6DEF23C11B96CC2600BCE792 /* fragment.glsl in Resources */,
 				6DE9D2F11BA6AB8C002D599C /* fragment_textured.glsl in Resources */,
 				6D5A86C619AE5C710066C1FD /* Images.xcassets in Resources */,
-				8BD98CCA222C86E10073D665 /* exodiahead.png in Resources */,
-				8BD98CCD222C86E10073D665 /* exodialeftleg.png in Resources */,
-				8BD98CCC222C86E10073D665 /* exodiarightleg.png in Resources */,
 				6D5A86BE19AE5C710066C1FD /* Credits.rtf in Resources */,
-				8BD98CC9222C86E10073D665 /* exodiarightarm.png in Resources */,
-				8BD98CCB222C86E10073D665 /* exodialeftarm.png in Resources */,
 				6DEF23C41B96CC2600BCE792 /* vertex.glsl in Resources */,
 				6DC7076A1BA7273500225B7D /* vertex_textured.glsl in Resources */,
 			);
