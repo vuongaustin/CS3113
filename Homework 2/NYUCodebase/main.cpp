@@ -153,10 +153,6 @@ int main(int argc, char *argv[]) {
     
         rightpaddle.pos.y += rightpaddle.direction.y * elapsed;
         
-        
-        ball.pos.x += ball.direction.x * elapsed;
-        ball.pos.y += ball.direction.y * elapsed;
-        
         float pw = abs(leftpaddle.pos.x - ball.pos.x) - ((leftpaddle.width + ball.width) / 2);
         float ph = abs(leftpaddle.pos.y - ball.pos.y) - ((leftpaddle.height + ball.height) / 2);
         
@@ -169,14 +165,18 @@ int main(int argc, char *argv[]) {
         if (ball.pos.y + (ball.height / 2) >= projectionHeight) { // top
             ball.direction.y = -ball.direction.y;
         }
+        
+        if (ball.pos.y - (ball.height / 2) <= -projectionHeight) {  // bottom
+            ball.direction.y = -ball.direction.y;
+        }
+        
+        ball.pos.x += ball.direction.x * elapsed;
+        ball.pos.y += ball.direction.y * elapsed;
         if (ball.pos.x + (ball.width / 2) >= projectionWidth) {  // right
             // Player won
             std::cout << "Player wins" << std::endl;
             glClearColor(0.1333f, 0.5451f, 0.1333f, 1.0f);
             ball.reset();
-        }
-        if (ball.pos.y - (ball.height / 2) <= -projectionHeight) {  // bottom
-            ball.direction.y = -ball.direction.y;
         }
         if (ball.pos.x - (ball.width / 2) <= -projectionWidth) {  // left
             // CPU won
