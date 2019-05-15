@@ -313,6 +313,25 @@ void shootdown () {
         }
     }
 }
+void shoottarget (Doodlebob& d) {
+    float up = d.pos.y - state.bob.pos.y;
+    float over = d.pos.x - state.bob.pos.x;
+    if (abs(up) > abs(over)) {
+        up /= up;
+        over /= up;
+    } else {
+        up /= over;
+        over /= over;
+    }
+    state.bubbles[bubbleIndex].direction.x = -over * 1.75;
+    state.bubbles[bubbleIndex].direction.y = -up * 1.75;
+    state.bubbles[bubbleIndex].pos.x = d.pos.x - 0.3f;
+    state.bubbles[bubbleIndex].pos.y = d.pos.y;
+    bubbleIndex++;
+    if (bubbleIndex >= 10) {
+        bubbleIndex = 0;
+    }
+}
 void shootbubble (Doodlebob& d) {
     state.bubbles[bubbleIndex].direction.x = -1.0f;
     state.bubbles[bubbleIndex].direction.y = 0.0f;
@@ -325,7 +344,7 @@ void shootbubble (Doodlebob& d) {
 }
 void shootbubbleup (Doodlebob& d) {
     state.bubbles[bubbleIndex].direction.x = -1.0f;
-    state.bubbles[bubbleIndex].direction.y = 1.0f;
+    state.bubbles[bubbleIndex].direction.y = 0.75f;
     state.bubbles[bubbleIndex].pos.x = d.pos.x - 0.3f;
     state.bubbles[bubbleIndex].pos.y = d.pos.y;
     bubbleIndex++;
@@ -335,7 +354,7 @@ void shootbubbleup (Doodlebob& d) {
 }
 void shootbubbledown (Doodlebob& d) {
     state.bubbles[bubbleIndex].direction.x = -1.0f;
-    state.bubbles[bubbleIndex].direction.y = -1.0f;
+    state.bubbles[bubbleIndex].direction.y = -0.75f;
     state.bubbles[bubbleIndex].pos.x = d.pos.x - 0.3f;
     state.bubbles[bubbleIndex].pos.y = d.pos.y;
     bubbleIndex++;
@@ -354,6 +373,116 @@ void resetpencil (Pencil& p) {
 }
 
 void UpdateGameLevel3 (float elapsed) {
+    const Uint8 *keys = SDL_GetKeyboardState(NULL);
+    if(keys[SDL_SCANCODE_RIGHT] && state.bob.pos.x + (state.bob.size.x / 2) <= 0.0f) {
+        state.bob.pos.x += elapsed * 1.5f;
+    }
+    if(keys[SDL_SCANCODE_LEFT] && state.bob.pos.x - (state.bob.size.x / 2) >= -projectionWidth) {
+        state.bob.pos.x -= elapsed * 1.5f;
+    }
+    if(keys[SDL_SCANCODE_UP] && state.bob.pos.y + (state.bob.size.y / 2) <= projectionHeight) {
+        state.bob.pos.y += elapsed * 1.5f;
+    }
+    if(keys[SDL_SCANCODE_DOWN] && state.bob.pos.y - (state.bob.size.y / 2) >= -projectionHeight) {
+        state.bob.pos.y -= elapsed * 1.5f;
+    }
+    for (Doodlebob& d : state.doods) {
+        d.timer -= elapsed;
+        if (d.living) {
+            d.pos.y += d.direction.y * elapsed * 0.5f;
+            d.pos.x += d.direction.x * elapsed * 0.5f;
+            if (d.pos.y + (d.size.y / 2) >= projectionHeight) {  // right
+                d.direction.y *= -1;
+            }
+            if (d.pos.y - (d.size.y / 2) <= -projectionHeight) {  // left
+                d.direction.y *= -1;
+            }
+            if (d.pos.x + (d.size.x / 2) >= projectionWidth) {
+                d.direction.x *= -1;
+            }
+            if (d.pos.x - (d.size.x / 2) <= 0.1f) {
+                d.direction.x *= -1;
+            }
+            if (d.timer < 0.0f) {
+                shoottarget(d);
+            }
+        }
+        if (d.timer < 0.0f) {
+            d.timer = 2.5f;
+        }
+    }
+    for (Pencil& p : state.pencils) {
+        if (p.pos.y + (p.size.y / 2) >= projectionHeight) { // top
+            p.direction.y = -p.direction.y;
+        }
+        
+        if (p.pos.y - (p.size.y / 2) <= -projectionHeight) {  // bottom
+            p.direction.y = -p.direction.y;
+        }
+        if (p.pos.x + (p.size.x / 2) >= projectionWidth) {  // right
+            resetpencil(p);
+        }
+        p.pos.x += elapsed * 1.5f * p.direction.x;
+        p.pos.y += elapsed * 1.5f * p.direction.y;
+        float pwplayer = abs(p.pos.x - state.bob.pos.x) - ((p.size.x + state.bob.size.x) / 2);
+        float phplayer = abs(p.pos.y - state.bob.pos.y) - ((p.size.y + state.bob.size.y) / 2);
+        if (pwplayer < 0 && phplayer < 0) {
+            numpencils++;
+            p.pos.x = -200.0f;
+            p.held = true;
+        }
+        int dead = 0;
+        for (Doodlebob& d : state.doods) {
+            if (!d.living) {dead++;}
+            float pw = abs(p.pos.x - d.pos.x) - ((p.size.x + d.size.x) / 2);
+            float ph = abs(p.pos.y - d.pos.y) - ((p.size.y + d.size.y) / 2);
+            if (pw < 0 && ph < 0) { // hits doodlebob
+                Mix_PlayChannel(-1, doodlesound, 0);
+                emit.position.x = d.pos.x;
+                emit.position.y = d.pos.y;
+                emit.trigger(elapsed);
+                d.pos.x = -2000.0f;
+                d.living = false;
+                p.pos.x = -2000.0f;
+                resetpencil(p);
+            }
+        }
+        if (dead == state.doods.size()) {
+            mode = STATE_WIN;
+        }
+    }
+    for (Bubble& b : state.bubbles) {
+        b.pos.x += elapsed * 1.3f * b.direction.x;
+        b.pos.y += elapsed * 1.3f * b.direction.y;
+        if (b.pos.y + (b.size.y / 2) >= projectionHeight) { // top
+            b.direction.y = -b.direction.y;
+        }
+        
+        if (b.pos.y - (b.size.y / 2) <= -projectionHeight) {  // bottom
+            b.direction.y = -b.direction.y;
+        }
+        if (b.pos.x - (b.size.x / 2) <= -projectionWidth) {  // left
+            b.pos.x = 2000.0f;
+        }
+        float pw = abs(state.bob.pos.x - b.pos.x) - ((state.bob.size.x + b.size.x) / 2);
+        float ph = abs(state.bob.pos.y - b.pos.y) - ((state.bob.size.y + b.size.y) / 2);
+        if (pw < 0 && ph < 0) { // hits player
+            Mix_PlayChannel(-1, deadspongebob, 0);
+            mode = STATE_LOSE;
+        }
+        for (Pencil& p : state.pencils) {
+            float pw2 = abs(p.pos.x - b.pos.x) - ((p.size.x + b.size.x) / 2);
+            float ph2 = abs(p.pos.y - b.pos.y) - ((p.size.y + b.size.y) / 2);
+            if (pw2 < 0 && ph2 < 0) { // hits pencil
+                resetpencil(p);
+                b.pos.x = 1200.0f;
+            }
+        }
+    }
+    emit.Update(elapsed);
+}
+
+void UpdateGameLevel2 (float elapsed) {
     const Uint8 *keys = SDL_GetKeyboardState(NULL);
     if(keys[SDL_SCANCODE_RIGHT] && state.bob.pos.x + (state.bob.size.x / 2) <= 0.0f) {
         state.bob.pos.x += elapsed * 1.5f;
@@ -469,78 +598,6 @@ void UpdateGameLevel3 (float elapsed) {
     emit.Update(elapsed);
 }
 
-void UpdateGameLevel2 (float elapsed) {
-    const Uint8 *keys = SDL_GetKeyboardState(NULL);
-    if(keys[SDL_SCANCODE_RIGHT] && state.bob.pos.x + (state.bob.size.x / 2) <= 0.0f) {
-        state.bob.pos.x += elapsed * 1.5f;
-    }
-    if(keys[SDL_SCANCODE_LEFT] && state.bob.pos.x - (state.bob.size.x / 2) >= -projectionWidth) {
-        state.bob.pos.x -= elapsed * 1.5f;
-    }
-    if(keys[SDL_SCANCODE_UP] && state.bob.pos.y + (state.bob.size.y / 2) <= projectionHeight) {
-        state.bob.pos.y += elapsed * 1.5f;
-    }
-    if(keys[SDL_SCANCODE_DOWN] && state.bob.pos.y - (state.bob.size.y / 2) >= -projectionHeight) {
-        state.bob.pos.y -= elapsed * 1.5f;
-    }
-    for (Doodlebob& d : state.doods) {
-        if (d.living) {
-            d.pos.y += d.direction.y * elapsed * 0.5f;
-            if (d.pos.y + (d.size.y / 2) >= projectionHeight) {  // right
-                for (Doodlebob& d2 : state.doods) {
-                    d2.direction.y *= -1;
-                }
-            }
-            if (d.pos.y - (d.size.y / 2) <= -projectionHeight) {  // left
-                for (Doodlebob& d2 : state.doods) {
-                    d2.direction.y *= -1;
-                }
-            }
-        }
-    }
-    for (Pencil& p : state.pencils) {
-        if (p.pos.y + (p.size.y / 2) >= projectionHeight) { // top
-            p.direction.y = -p.direction.y;
-        }
-        
-        if (p.pos.y - (p.size.y / 2) <= -projectionHeight) {  // bottom
-            p.direction.y = -p.direction.y;
-        }
-        if (p.pos.x + (p.size.x / 2) >= projectionWidth) {  // right
-            resetpencil(p);
-        }
-        p.pos.x += elapsed * 1.5f * p.direction.x;
-        p.pos.y += elapsed * 1.5f * p.direction.y;
-        float pwplayer = abs(p.pos.x - state.bob.pos.x) - ((p.size.x + state.bob.size.x) / 2);
-        float phplayer = abs(p.pos.y - state.bob.pos.y) - ((p.size.y + state.bob.size.y) / 2);
-        if (pwplayer < 0 && phplayer < 0) {
-            numpencils++;
-            p.pos.x = -200.0f;
-            p.held = true;
-        }
-        int dead = 0;
-        for (Doodlebob& d : state.doods) {
-            if (!d.living) {dead++;}
-            float pw = abs(p.pos.x - d.pos.x) - ((p.size.x + d.size.x) / 2);
-            float ph = abs(p.pos.y - d.pos.y) - ((p.size.y + d.size.y) / 2);
-            if (pw < 0 && ph < 0) { // hits doodlebob
-                Mix_PlayChannel(-1, doodlesound, 0);
-                emit.position.x = d.pos.x;
-                emit.position.y = d.pos.y;
-                emit.trigger(elapsed);
-                d.pos.x = -2000.0f;
-                d.living = false;
-                p.pos.x = -2000.0f;
-                resetpencil(p);
-            }
-        }
-        if (dead == state.doods.size()) {
-            mode = STATE_WIN;
-        }
-    }
-    emit.Update(elapsed);
-}
-
 void UpdateGameLevel1 (float elapsed) {
     const Uint8 *keys = SDL_GetKeyboardState(NULL);
     if(keys[SDL_SCANCODE_RIGHT] && state.bob.pos.x + (state.bob.size.x / 2) <= 0.0f) {
@@ -556,18 +613,33 @@ void UpdateGameLevel1 (float elapsed) {
         state.bob.pos.y -= elapsed * 1.5f;
     }
     for (Doodlebob& d : state.doods) {
+        d.timer -= elapsed;
         if (d.living) {
             d.pos.y += d.direction.y * elapsed * 0.5f;
             if (d.pos.y + (d.size.y / 2) >= projectionHeight) {  // right
-                for (Doodlebob& d2 : state.doods) {
-                    d2.direction.y *= -1;
-                }
+                d.direction.y *= -1;
             }
             if (d.pos.y - (d.size.y / 2) <= -projectionHeight) {  // left
-                for (Doodlebob& d2 : state.doods) {
-                    d2.direction.y *= -1;
+                d.direction.y *= -1;
+            }
+            if (d.pos.x + (d.size.x / 2) >= projectionWidth) {
+                d.direction.x *= -1;
+            }
+            if (d.pos.x - (d.size.x / 2) <= 0.1f) {
+                d.direction.x *= -1;
+            }
+            if (d.timer < 0.0f) {
+                if (d.pos.y > state.bob.pos.y) {
+                    shootbubbledown(d);
+                } else if (d.pos.y < state.bob.pos.y) {
+                    shootbubbleup(d);
+                } else {
+                    shootbubble(d);
                 }
             }
+        }
+        if (d.timer < 0.0f) {
+            d.timer = 2.5f;
         }
     }
     for (Pencil& p : state.pencils) {
@@ -608,6 +680,34 @@ void UpdateGameLevel1 (float elapsed) {
         }
         if (dead == state.doods.size()) {
             mode = STATE_WIN;
+        }
+    }
+    for (Bubble& b : state.bubbles) {
+        b.pos.x += elapsed * 1.0f * b.direction.x;
+        b.pos.y += elapsed * 1.0f * b.direction.y;
+        if (b.pos.y + (b.size.y / 2) >= projectionHeight) { // top
+            b.direction.y = -b.direction.y;
+        }
+        
+        if (b.pos.y - (b.size.y / 2) <= -projectionHeight) {  // bottom
+            b.direction.y = -b.direction.y;
+        }
+        if (b.pos.x - (b.size.x / 2) <= -projectionWidth) {  // left
+            b.pos.x = 2000.0f;
+        }
+        float pw = abs(state.bob.pos.x - b.pos.x) - ((state.bob.size.x + b.size.x) / 2);
+        float ph = abs(state.bob.pos.y - b.pos.y) - ((state.bob.size.y + b.size.y) / 2);
+        if (pw < 0 && ph < 0) { // hits player
+            Mix_PlayChannel(-1, deadspongebob, 0);
+            mode = STATE_LOSE;
+        }
+        for (Pencil& p : state.pencils) {
+            float pw2 = abs(p.pos.x - b.pos.x) - ((p.size.x + b.size.x) / 2);
+            float ph2 = abs(p.pos.y - b.pos.y) - ((p.size.y + b.size.y) / 2);
+            if (pw2 < 0 && ph2 < 0) { // hits pencil
+                resetpencil(p);
+                b.pos.x = 2000.0f;
+            }
         }
     }
     emit.Update(elapsed);
@@ -650,6 +750,9 @@ void RenderGameLevel1 (ShaderProgram& program) {
     for (Pencil& p : state.pencils) {
         p.Draw(program);
     }
+    for (Bubble& b : state.bubbles) {
+        b.Draw(program);
+    }
     glm::mat4 modelMatrix = glm::mat4(1.0f);
     program2.SetModelMatrix(modelMatrix);
     emit.Render();
@@ -666,6 +769,9 @@ void RenderGameLevel2 (ShaderProgram& program) {
     state.doods[2].Draw(program);
     for (Pencil& p : state.pencils) {
         p.Draw(program);
+    }
+    for (Bubble& b : state.bubbles) {
+        b.Draw(program);
     }
     glm::mat4 modelMatrix = glm::mat4(1.0f);
     program2.SetModelMatrix(modelMatrix);
